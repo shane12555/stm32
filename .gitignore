@@ -1,0 +1,9 @@
+# 忽略編譯產生的中間檔與執行檔
+*.o
+*.elf
+*.bin
+*.map
+*.hex
+
+# 忽略 VS Code 設定檔
+.vscode/
