@@ -6,8 +6,8 @@ CFLAGS = -mcpu=cortex-m4 -mthumb -g -O0 -nostdlib
 
 all: firmware.bin
 
-firmware.elf: main.c rcc.c startup.s
-	$(CC) $(CFLAGS) -T linker.ld -o firmware.elf main.c rcc.c startup.s
+firmware.elf: main.c rcc.c uart.c startup.s
+	$(CC) $(CFLAGS) -T linker.ld -o firmware.elf main.c uart.c rcc.c startup.s
 
 firmware.bin: firmware.elf
 	$(OBJCOPY) -O binary firmware.elf firmware.bin

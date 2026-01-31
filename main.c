@@ -1,23 +1,27 @@
 #include <stdint.h>
 #include "rcc.h"
+#include "uart.h" 
 
-#define GPIOA_BASE    0x40020000
-#define GPIOA_MODER   (*(volatile uint32_t *)(GPIOA_BASE + 0x00))
-#define GPIOA_ODR     (*(volatile uint32_t *)(GPIOA_BASE + 0x14))
-#define RCC_AHB1ENR_MAIN   (*(volatile uint32_t *)(0x40023800 + 0x30))
+/* 輔助函式：發送整串字串 */
+void uart_print(char *str) {
+    while (*str) {             // 當指標指到的字不是 '\0' (字串結尾)
+        uart_write(*str);      // 傳送當前字元
+        str++;                 // 指標往後移一格
+    }
+}
 
 int main(void) {
-    /* 1. 系統加速至 100MHz */
+    /* 1. 系統加速 (100MHz) */
     rcc_setup();
 
-    /* 2. 初始化 GPIO (PA5) */
-    RCC_AHB1ENR_MAIN |= (1 << 0);
-    GPIOA_MODER &= ~(3 << 10);
-    GPIOA_MODER |= (1 << 10);
+    /* 2. 初始化 UART (開啟電源、設定腳位、Baudrate) */
+    uart_init();
 
+    /* 3. 無窮迴圈：每隔一秒打一次招呼 */
     while(1) {
-        GPIOA_ODR ^= (1 << 5);
-        /* 100MHz 下的延遲 */
-        for(volatile int i=0; i<2000000; i++); // 我把它加倍到 200萬，讓閃爍稍微人眼可見一點
+        uart_print("Hello World from STM32!\r\n"); // \r\n 是換行
+        
+        // 簡單延遲 (讓訊息不要刷太快)
+        for(volatile int i=0; i<10000000; i++); 
     }
 }
