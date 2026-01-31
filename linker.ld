@@ -15,7 +15,7 @@ SECTIONS
         _etext = .;
     } > FLASH
 
-    /* 關鍵：VMA 在 SRAM，LMA 在 FLASH */
+    /* 已初始化的變數 (要從 Flash 搬過來) */
     .data :
     {
         _sdata = .;
@@ -24,8 +24,18 @@ SECTIONS
         _edata = .;
     } > SRAM AT > FLASH
 
-    /* 記住搬運的來源地址 */
     _sidata = LOADADDR(.data);
+
+    /* --- 新增：未初始化的變數 (要清零) --- */
+    .bss :
+    {
+        . = ALIGN(4);
+        _sbss = .;         /* [清潔起點] Start of BSS */
+        *(.bss)            /* 標準未初始化變數 */
+        *(COMMON)          /* 這是 C 語言的一種特殊全域變數 */
+        . = ALIGN(4);
+        _ebss = .;         /* [清潔終點] End of BSS */
+    } > SRAM
 
     _estack = ORIGIN(SRAM) + LENGTH(SRAM);
 }

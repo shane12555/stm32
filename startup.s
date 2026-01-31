@@ -9,6 +9,8 @@
 .word _sidata
 .word _sdata
 .word _edata
+.word _sbss    /* 新增：BSS 起點 */
+.word _ebss    /* 新增：BSS 終點 */
 .word _estack
 
 /* 中斷向量表 */
@@ -22,22 +24,35 @@ g_pfnVectors:
 .section .text
 .type Reset_Handler, %function
 Reset_Handler:
-    /* A. 初始化 Stack Pointer */
+    /* 1. 初始化 Stack Pointer */
     ldr r0, =_estack
     mov sp, r0
 
-    /* B. 執行 .data 搬運 (從 Flash 到 SRAM) */
-    ldr r0, =_sdata       /* 目的地開始 */
-    ldr r1, =_edata       /* 目的地結束 */
-    ldr r2, =_sidata      /* 來源地 (Flash) */
+    /* 2. 搬運工：Copy .data from Flash to SRAM */
+    ldr r0, =_sdata
+    ldr r1, =_edata
+    ldr r2, =_sidata
 
 Copy_Loop:
     cmp r0, r1
-    beq Jump_To_Main
+    beq Zero_BSS_Init     /* 搬完了？去做清潔工作 */
 
-    ldr r3, [r2], #4      /* 讀 Flash */
-    str r3, [r0], #4      /* 寫 SRAM */
+    ldr r3, [r2], #4
+    str r3, [r0], #4
     b Copy_Loop
+
+    /* 3. 清潔工：Zero .bss section (新增部分) */
+Zero_BSS_Init:
+    ldr r0, =_sbss        /* R0 = 目標地起點 */
+    ldr r1, =_ebss        /* R1 = 目標地終點 */
+    mov r2, #0            /* R2 = 準備掃把 (數值 0) */
+
+Zero_Loop:
+    cmp r0, r1            /* 到終點了嗎？ */
+    beq Jump_To_Main      /* 掃完了，跳去執行 main */
+
+    str r2, [r0], #4      /* 把 0 (R2) 寫進 RAM (R0)，R0 自動往後移 */
+    b Zero_Loop           /* 繼續掃下一個 */
 
 Jump_To_Main:
     bl main
