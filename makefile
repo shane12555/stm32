@@ -1,13 +1,14 @@
 CC = arm-none-eabi-gcc
 OBJCOPY = arm-none-eabi-objcopy
 
-# 編譯選項 (針對 Cortex-M4)
-CFLAGS = -mcpu=cortex-m4 -mthumb -g -O0 -nostdlib
+# 編譯參數：加入 nano.specs 和 syscalls.c 支援 printf
+CFLAGS = -mcpu=cortex-m4 -mthumb -g -O0 --specs=nano.specs -nostartfiles
 
 all: firmware.bin
 
-firmware.elf: main.c rcc.c uart.c startup.s
-	$(CC) $(CFLAGS) -T linker.ld -o firmware.elf main.c uart.c rcc.c startup.s
+# 這一行就是你報錯說找不到的規則，一定要有！
+firmware.elf: main.c rcc.c uart.c syscalls.c startup.s
+	$(CC) $(CFLAGS) -T linker.ld -o firmware.elf main.c rcc.c uart.c syscalls.c startup.s
 
 firmware.bin: firmware.elf
 	$(OBJCOPY) -O binary firmware.elf firmware.bin

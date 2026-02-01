@@ -1,27 +1,34 @@
-#include <stdint.h>
+#include <stdio.h>
 #include "rcc.h"
-#include "uart.h" 
-
-/* 輔助函式：發送整串字串 */
-void uart_print(char *str) {
-    while (*str) {             // 當指標指到的字不是 '\0' (字串結尾)
-        uart_write(*str);      // 傳送當前字元
-        str++;                 // 指標往後移一格
-    }
-}
+#include "uart.h"
 
 int main(void) {
-    /* 1. 系統加速 (100MHz) */
+    /* 1. 啟動原子鐘 (100MHz, HSE) */
     rcc_setup();
-
-    /* 2. 初始化 UART (開啟電源、設定腳位、Baudrate) */
+    
+    /* 2. 初始化 UART (115200) */
     uart_init();
 
-    /* 3. 無窮迴圈：每隔一秒打一次招呼 */
+    /* 3. [關鍵] 暖機延遲 (防止開機第一句被吃掉) */
+    // 讓 USB 轉接晶片有一點時間準備
+    for(int i = 0; i < 2000000; i++) {
+        __asm("nop");
+    }
+
+    /* 4. 開機畫面 */
+    printf("\r\n\r\n"); // 清空
+    printf("=============================================\r\n");
+    printf("   Chatbot System Online (HSE 100MHz)        \r\n");
+    printf("   Connection: Stable                        \r\n");
+    printf("   Waiting for input...                      \r\n");
+    printf("=============================================\r\n");
+
+    char c;
     while(1) {
-        uart_print("Hello World from STM32!\r\n"); // \r\n 是換行
-        
-        // 簡單延遲 (讓訊息不要刷太快)
-        for(volatile int i=0; i<10000000; i++); 
+        // 1. 等待輸入
+        c = uart_read(); 
+
+        // 2. 機器人回覆 (這裡證明是雙向溝通)
+        printf("[STM32] I received: '%c'\r\n", c);
     }
 }
