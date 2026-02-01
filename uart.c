@@ -1,5 +1,6 @@
 #include "uart.h"
 #include <stdint.h>
+#include "nvic.h"
 
 /* --- 1. 補齊暫存器地址 (保證編譯不報錯) --- */
 #define RCC_BASE          0x40023800
@@ -34,8 +35,13 @@ void uart_init(void) {
     // 25,000,000 / 115200 = 217.01
     USART2_BRR = 217; 
 
-    /* 5. 啟用 UART (發送 + 接收) */
-    USART2_CR1 = (1 << 13) | (1 << 3) | (1 << 2);
+    /*5. 設定 NVIC (CPU 總機) --- */
+    // 我們剛剛算出來的：ISER1 的第 6 bit
+    // 這樣 CPU 才會受理 UART 的請求
+    NVIC_ISER1 |= (1 << 6);
+
+    /* 通知硬體(Bit 5) + 總電源(Bit 13) + 發送(Bit 3) + 接收(Bit 2) */
+    USART2_CR1 = (1 << 13) | (1 << 5) | (1 << 3) | (1 << 2);
 }
 
 void uart_write(int ch) {
