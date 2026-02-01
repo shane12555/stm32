@@ -8,8 +8,8 @@ void rcc_setup(void) {
     /* 2. 設定 Flash Latency = 3 Wait States */
     FLASH_ACR = (1 << 8) | (1 << 9) | (1 << 10) | (3 << 0);
 
-    /* 3. 設定匯流排除頻 (APB1 = Div 2) */
-    RCC_CFGR |= (4 << 10); 
+    /* 3. 設定匯流排除頻  */
+    RCC_CFGR |= (5 << 10); 
 
     /* 4. 設定 PLL (16MHz -> 100MHz) */
     RCC_PLLCFGR = 0;             // 清空

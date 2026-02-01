@@ -2,12 +2,12 @@ CC = arm-none-eabi-gcc
 OBJCOPY = arm-none-eabi-objcopy
 
 # 編譯選項 (針對 Cortex-M4)
-CFLAGS = -mcpu=cortex-m4 -mthumb -g -O0 -nostdlib
+CFLAGS = -mcpu=cortex-m4 -mthumb -g -O0 -specs=nano.specs -nostartfiles
 
 all: firmware.bin
 
-firmware.elf: main.c rcc.c uart.c startup.s
-	$(CC) $(CFLAGS) -T linker.ld -o firmware.elf main.c uart.c rcc.c startup.s
+firmware.elf: main.c rcc.c uart.c syscalls.c startup.s
+	$(CC) $(CFLAGS) -T linker.ld -o firmware.elf main.c rcc.c uart.c syscalls.c startup.s
 
 firmware.bin: firmware.elf
 	$(OBJCOPY) -O binary firmware.elf firmware.bin

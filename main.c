@@ -1,27 +1,26 @@
-#include <stdint.h>
+#include <stdio.h>
 #include "rcc.h"
-#include "uart.h" 
-
-/* 輔助函式：發送整串字串 */
-void uart_print(char *str) {
-    while (*str) {             // 當指標指到的字不是 '\0' (字串結尾)
-        uart_write(*str);      // 傳送當前字元
-        str++;                 // 指標往後移一格
-    }
-}
+#include "uart.h"
 
 int main(void) {
-    /* 1. 系統加速 (100MHz) */
+    // 1. 初始化
     rcc_setup();
-
-    /* 2. 初始化 UART (開啟電源、設定腳位、Baudrate) */
     uart_init();
 
-    /* 3. 無窮迴圈：每隔一秒打一次招呼 */
+    // 2. 開機嗆聲
+    printf("\r\n\r\n"); // 先換幾行，清空版面
+    printf("==================================\r\n");
+    printf("   Chatbot Mode Activated!        \r\n");
+    printf("   Type any key to start...       \r\n");
+    printf("==================================\r\n");
+
+    char c;
     while(1) {
-        uart_print("Hello World from STM32!\r\n"); // \r\n 是換行
-        
-        // 簡單延遲 (讓訊息不要刷太快)
-        for(volatile int i=0; i<10000000; i++); 
+        // 1. 等待你按鍵盤
+        c = uart_read(); 
+
+        // 2. 這是最關鍵的一步！
+        // STM32 會自己加料，證明它有在思考
+        printf("STM32 says: I received '%c'\r\n", c);
     }
 }
